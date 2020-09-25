@@ -1,0 +1,43 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: rgb(191,188,255);
+  background: linear-gradient(90deg, rgba(191,188,255,1) 0%, rgba(145,145,250,1) 54%);
+  .login-container {
+    display: flex;
+    .icon-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin-bottom: 20px;
+      button {
+        margin-bottom: 10px;
+      }
+      .icon-background {
+        padding: 15px;
+        background: lightgray;
+        border-radius: 35px;
+      }
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      .mat-form-field {
+        margin-bottom: 10px;
+      }
+      .spinner-wrapper {
+        margin: 10px 0;
+        mat-spinner {
+          margin: 0 auto;
+        }
+      }
+    }
+  }
+}
+

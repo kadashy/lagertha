@@ -1,0 +1,45 @@
+<div class="login-container">
+  <mat-card>
+    <div class="icon-container">
+      <button mat-fab color="primary" aria-label="Consulta Indicadores" disabled>
+        <mat-icon>insert_chart</mat-icon>
+      </button>
+      <mat-label>Indicadores
+      </mat-label>
+    </div>
+    <form [formGroup]="loginForm">
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput placeholder="Placeholder" [formControl]="controlsAccessor.login">
+        <mat-error *ngIf="controlsAccessor.login.hasError('email') && !controlsAccessor.login.hasError('required')">
+          Introducir e-mail valido <strong>ejemplo@proveedor.ext</strong>.
+        </mat-error>
+        <mat-error *ngIf="controlsAccessor.login.hasError('required')">
+          Email es <strong>requerido</strong>.
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña</mat-label>
+        <input matInput [type]="hide ? 'password' : 'text'" [formControl]="controlsAccessor.password">
+        <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+          <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary"
+              [disabled]="!(controlsAccessor.password.valid && controlsAccessor.login.valid) || loading" (click)="login()">
+        <ng-container *ngIf="!loading; else loadingTemplate">Entrar</ng-container>
+        <ng-template #loadingTemplate>
+          <div class="spinner-wrapper">
+            <mat-spinner [diameter]="16"></mat-spinner>
+          </div>
+
+        </ng-template>
+      </button>
+    </form>
+  </mat-card>
+
+</div>
+
+
+
