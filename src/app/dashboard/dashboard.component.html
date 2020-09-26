@@ -13,8 +13,26 @@
 </ng-container>
 
 
+
+
 <ng-template #content>
-    Map
+    <div class="dashboard-wrapper">
+        <div class="map-wrapper">
+            <div #mapContainer id="map"></div>
+        </div>
+        <div class="routes-wrapper">
+            <div *ngFor="let trans of transports;let i = index" class="routes-titles" (click)="drawTransportPoints(i)">
+                {{trans}}
+            </div>
+
+
+        <div class="routes-availables">
+
+        </div>
+        </div>
+    </div>
+
+
 
   <ng-template #errorTemplate>
     <div class="spinner-wrapper">

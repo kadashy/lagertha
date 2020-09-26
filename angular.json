@@ -25,6 +25,7 @@
             "aot": true,
             "assets": [
               "src/favicon.ico",
+              "src/assets/lat-lng.csv",
               "src/assets"
             ],
             "styles": [
