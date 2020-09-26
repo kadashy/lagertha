@@ -233,7 +233,7 @@ build-master:
     - docker tag us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
     - GCR_PULL_KEY_MASTER=$(cat .envmaster)
     - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_MASTER us.gcr.io
-    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
+    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}"-$VERSION
   allow_failure: true
   only:
     - master
