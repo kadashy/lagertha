@@ -73,8 +73,6 @@ export class DashboardComponent implements AfterViewInit {
     };
     this.directionsService.route(request, (result: DirectionsResult, status) => {
       // result.routes
-      console.log('result');
-      console.log(result);
       if (status === 'OK') {
         this.directionsRenderer.setDirections(result);
       }
@@ -82,23 +80,24 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   drawTransportPoints(index: number): void {
-    console.log(this.transports[index]);
-    console.log(this.orders);
-    console.log(this.orders.filter(order => order.transport_id === this.transports[index]));
-    setTimeout(() => {
-      this.markers.forEach( marker => {
-        marker.setMap(null);
-      });
+    // Clear all markers
+    this.markers.forEach( marker => {
+      marker.setMap(null);
+    });
 
-      setTimeout(() => {
-        this.orders.filter(order => order.transport_id === this.transports[index])
-          .forEach((point) => {
-            console.log('point', point);
-            this.drawPoint(point, this.map);
-          });
-      }, 100);
-    }, 200)
+    // Draw transport markers
+    const transportPoints = this.orders.filter(order => order.transport_id === this.transports[index])
+    .map((point) => {
+      console.log('point', point);
+      this.drawPoint(point, this.map);
+      return point;
+    });
 
+    // Transport Points
+    // turf.point()
+    // const turfPoints = transportPoints.map((point) => turf.point([point.lng, point.lat]));
+
+    // console.log('turf points', turfPoints);
 
   }
 
