@@ -29,6 +29,7 @@
     "@turf/clusters-dbscan": "^6.0.1",
     "@turf/collect": "^6.0.1",
     "@turf/helpers": "^6.1.4",
+    "@turf/turf": "^5.1.6",
     "@types/googlemaps": "^3.39.13",
     "@types/turf": "^3.5.32",
     "chart.js": "^2.9.3",
