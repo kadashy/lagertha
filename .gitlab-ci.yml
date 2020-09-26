@@ -30,8 +30,10 @@ package:
   image: node:10.20.1-alpine3.9
   stage: package
   script:
-    - npm prune --production
+    # - npm prune --production
+    - npm config set unsafe-perm true
     - npm install
+    - npm install -g @angular/cli@latest
     - npm run build
     - ls -la dist/falabella-hackaton
   only:
@@ -44,7 +46,7 @@ package:
     name: ${CI_COMMIT_REF_SLUG}
     paths:
       - falabella-hackaton
-      - dist/ng-nsr-ui
+      - dist/falabella-hackaton
 
 credentials-dev:
   image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
@@ -164,7 +166,7 @@ publish-dev:
     - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
     - gcloud auth activate-service-account --key-file=gcr_auth.json
     - VERSION=$(cat .version)
-    - gsutil cp -r falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
+    - gsutil cp -r dist/falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
   only:
     - develop
     - master
