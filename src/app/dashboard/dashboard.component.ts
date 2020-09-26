@@ -53,7 +53,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   loadRoutes(): void {
-    this.httpClient.get('assets/lat-lng.csv',  {responseType: 'text'}).subscribe(data => {
+    this.httpClient.get('https://storage.googleapis.com/vikingsweb/lagertha%3Amaster-0.0.0/assets/lat-lng.csv',  {responseType: 'text'}).subscribe(data => {
       this.orders = JSON.parse(csvJSON(data)) as OrderPoint[];
       this.orders.pop();
       this.orders.forEach((order) => {
