@@ -31,6 +31,7 @@ package:
   stage: package
   script:
     # - npm prune --production
+    - npm config set unsafe-perm true
     - npm install
     - npm install -g @angular/cli@latest
     - npm run build
