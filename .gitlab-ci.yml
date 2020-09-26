@@ -166,7 +166,7 @@ publish-dev:
     - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
     - gcloud auth activate-service-account --key-file=gcr_auth.json
     - VERSION=$(cat .version)
-    - gsutil cp -r dist/falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
+    - gsutil cp -r dist/falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}"-"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
   only:
     - develop
     - master
