@@ -1,0 +1,239 @@
+## Ci/CD para los desarrollos de Node en NSR en GitLab
+
+stages:
+  - package
+  - seting-env
+  - validate-version
+  - build
+  - publish
+  - clean
+  - deploy
+
+tag:
+  image: registrysecaas.azurecr.io/secaas/node:10-latest
+  stage: package
+  script:
+    - BUILD_VERSION=$(node -pe "require('./package.json').version")
+    - echo $BUILD_VERSION > .version
+    - cat .version
+  only:
+    - develop
+    - test
+    - master
+  tags:
+    - k8s-runner
+  artifacts:
+    paths:
+      - .version
+
+package:
+  image: node:10.20.1-alpine3.9
+  stage: package
+  script:
+    - npm prune --production
+    - npm install
+    - npm run build
+    - ls -la dist/falabella-hackaton
+  only:
+    - develop
+    - master
+  tags:
+    - k8s-runner
+  artifacts:
+    when: always
+    name: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - falabella-hackaton
+      - dist/ng-nsr-ui
+
+credentials-dev:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: seting-env
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - GCR_PULL_KEY=$(gcloud auth print-access-token)
+    - echo "$GCR_PULL_KEY" > .envdevelop
+    - PROJECTID=PROJECT_ID_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!PROJECTID} > .projectiddevelop
+    - cat .projectiddevelop
+  only:
+    - develop
+    - test
+  tags:
+    - k8s-runner
+  artifacts:
+    when: always
+    name: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .projectiddevelop
+      - .envdevelop
+
+credentials-test:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: seting-env
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - GCR_PULL_KEY=$(gcloud auth print-access-token)
+    - echo "$GCR_PULL_KEY" > .envtest
+    - PROJECTID=PROJECT_ID_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!PROJECTID} > .projectidtest
+    - CLUSTER_NAME=CLUSTER_NAME_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!CLUSTER_NAME} > .clusternametest
+    - CLUSTER_ZONE=CLUSTER_ZONE_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!CLUSTER_ZONE} > .clusterzonetest
+  only:
+    - test
+  tags:
+    - k8s-runner
+  artifacts:
+    when: always
+    name: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .envtest
+      - .projectidtest
+      - .version
+      - .clusternametest
+      - .clusterzonetest
+
+credentials-prod:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: seting-env
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - GCR_PULL_KEY=$(gcloud auth print-access-token)
+    - echo "$GCR_PULL_KEY" > .env${CI_COMMIT_REF_SLUG}
+    - PROJECTID=PROJECT_ID_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!PROJECTID} > .projectmaster
+    - CLUSTER_NAME=CLUSTER_NAME_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!CLUSTER_NAME} > .clustername
+    - CLUSTER_ZONE=CLUSTER_ZONE${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!CLUSTER_ZONE} > .clusterzone
+  only:
+    - master
+  tags:
+    - k8s-runner
+  artifacts:
+    when: always
+    name: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .envdevelop
+      - .envmaster
+      - .version
+
+validate-version:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: validate-version
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - PROJECTID=$(cat .projectid${CI_COMMIT_REF_SLUG})
+    - GCR_PULL_KEY=$(cat .envdevelop)
+    - VERSION=$(cat .version)
+    - TAGS_GCP=$(gcloud container images list-tags --filter="tags:$VERSION" --format=json us.gcr.io/"${PROJECTID}"/"${CI_PROJECT_NAME}")
+    - echo $TAGS_GCP >> .tags_gcp
+  allow_failure: true
+  only:
+    - develop
+    - test
+    - master
+  tags:
+    - k8s-runner
+  artifacts:
+    when: always
+    name: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .tags_gcp
+
+publish-dev:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: publish
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - VERSION=$(cat .version)
+    - gsutil cp -r falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
+  only:
+    - develop
+    - master
+  tags:
+    - k8s-runner
+
+clean-tmp:
+  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+  stage: clean
+  script:
+    - OWNER=$(cat pipeline/ci/.owner)
+    - VERSION=$(cat .version)
+    - PROJECTID=$(cat .projectid${CI_COMMIT_REF_SLUG})
+    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+    - gcloud auth activate-service-account --key-file=gcr_auth.json
+    - gcloud container images delete us.gcr.io/$PROJECTID/tmp/"${CI_PROJECT_NAME}":$VERSION --force-delete-tags --quiet
+  only:
+    - develop
+  tags:
+    - k8s-runner
+
+build-test:
+  image: docker:stable-dind
+  stage: build
+  services:
+    - docker:18.09.7-dind
+  script:
+    - mkdir ~/.docker
+    - echo $DOCKER_AUTH_CONFIG >> ~/.docker/config.json
+    - VERSION=$(cat .version)
+    - GCR_PULL_KEY=$(cat .envdevelop)
+    - PROJECTID=$(cat .projectidtest)
+    - TAGS_GCP=$(cat .tags_gcp)
+    - if [[ "$TAGS_GCP" == "[]" ]]; then  docker push us.gcr.io/"${PROJECTID}"/tmp/"${CI_PROJECT_NAME}":$VERSION; else  figlet Este Tag ya existe echo "Este TAG ya existe:" "${CI_PROJECT_NAME}":"$VERSION"  "NO se publicaran los cambios" && exit 1; fi
+    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY us.gcr.io
+    - docker pull us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
+    - docker tag us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
+    - GCR_PULL_KEY_TEST=$(cat .envtest)
+    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_TEST us.gcr.io
+    - docker push us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
+  allow_failure: true
+  only:
+    - test
+  tags:
+    - k8s-runner
+
+build-master:
+  image: docker:stable-dind
+  stage: build
+  services:
+    - docker:18.09.7-dind
+  script:
+    - mkdir ~/.docker
+    - echo $DOCKER_AUTH_CONFIG >> ~/.docker/config.json
+    - VERSION=$(cat .version)
+    - GCR_PULL_KEY=$(cat .envtest)
+    - PROJECTID_TEST=$(cat .projectidtest)
+    - PROJECTID_MASTER=$(cat .projectidmaster)
+    - TAGS_GCP=$(cat .tags_gcp)
+    - if [[ "$TAGS_GCP" == "[]" ]]; then  docker push us.gcr.io/"${PROJECTID}"/tmp/"${CI_PROJECT_NAME}":$VERSION; else  echo "Este TAG ya existe:" "${CI_PROJECT_NAME}":"$VERSION"  "NO se publicaran los cambios" && exit 1; fi
+    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY us.gcr.io
+    - docker pull us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION
+    - docker tag us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
+    - GCR_PULL_KEY_MASTER=$(cat .envmaster)
+    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_MASTER us.gcr.io
+    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
+  allow_failure: true
+  only:
+    - master
+  tags:
+    - k8s-runner
