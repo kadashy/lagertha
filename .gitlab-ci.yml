@@ -32,7 +32,7 @@ package:
   script:
     - npm prune --production
     - npm install
-    - npm run build
+    - npx ng build
     - ls -la dist/falabella-hackaton
   only:
     - develop
