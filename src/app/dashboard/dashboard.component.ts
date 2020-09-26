@@ -5,9 +5,8 @@ import {Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {MatDialog} from '@angular/material/dialog';
 import {csvJSON} from './utils';
-// import * as turf from '@turf/turf';
+import * as turf from '@turf/turf';
 import DirectionsResult = google.maps.DirectionsResult;
-// import clustersDbscan from '@turf/clusters-dbscan';
 
 export interface OrderPoint {
   nro_oc: string;
@@ -53,7 +52,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   loadRoutes(): void {
-    this.httpClient.get('https://storage.googleapis.com/vikingsweb/lagertha-master-0.0.0/assets/lat-lng.csv',  {responseType: 'text'}).subscribe(data => {
+    this.httpClient.get('assets/lat-lng.csv',  {responseType: 'text'}).subscribe(data => {
       this.orders = JSON.parse(csvJSON(data)) as OrderPoint[];
       this.orders.pop();
       this.orders.forEach((order) => {
@@ -97,10 +96,10 @@ export class DashboardComponent implements AfterViewInit {
 
     // Transport Points
     // turf.point()
-   // const turfPoints = transportPoints.map((point) => point([point.lng, point.lat]));
+    const turfPoints = transportPoints.map((point, num) => turf.point([point.lng, point.lat], {id: num}));
 
-    // console.log('turf points', turfPoints);
-    // const clustered = clustersDbscan(turfPoints, 10);
+    console.log('turf points', turf.featureCollection(turfPoints));
+    // const clustered = clustersDbscan(turf.featureCollection(turfPoints), 500);
     // console.log('clustered', clustered);
 
   }
