@@ -166,7 +166,7 @@ publish-dev:
     - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
     - gcloud auth activate-service-account --key-file=gcr_auth.json
     - VERSION=$(cat .version)
-    - gsutil cp -r dist/falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
+    - gsutil cp -r dist/falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}"-"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
   only:
     - develop
     - master
@@ -233,7 +233,7 @@ build-master:
     - docker tag us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
     - GCR_PULL_KEY_MASTER=$(cat .envmaster)
     - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_MASTER us.gcr.io
-    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
+    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}"-$VERSION
   allow_failure: true
   only:
     - master
