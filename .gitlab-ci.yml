@@ -36,6 +36,7 @@ package:
     - ls -la dist/falabella-hackaton
   only:
     - develop
+    - master
   tags:
     - k8s-runner
   artifacts:
@@ -166,6 +167,7 @@ publish-dev:
     - gsutil cp -r falabella-hackaton gs://vikingsweb/"${CI_PROJECT_NAME}":"${CI_COMMIT_REF_SLUG}"-"${VERSION}"
   only:
     - develop
+    - master
   tags:
     - k8s-runner
 
