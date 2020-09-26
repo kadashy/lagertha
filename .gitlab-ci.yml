@@ -3,8 +3,6 @@
 stages:
   - package
   - seting-env
-  - validate-version
-  - build
   - publish
   - clean
   - deploy
@@ -131,31 +129,31 @@ credentials-prod:
       - .envmaster
       - .version
 
-validate-version:
-  image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
-  stage: validate-version
-  script:
-    - OWNER=$(cat pipeline/ci/.owner)
-    - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
-    - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
-    - gcloud auth activate-service-account --key-file=gcr_auth.json
-    - PROJECTID=$(cat .projectid${CI_COMMIT_REF_SLUG})
-    - GCR_PULL_KEY=$(cat .envdevelop)
-    - VERSION=$(cat .version)
-    - TAGS_GCP=$(gcloud container images list-tags --filter="tags:$VERSION" --format=json us.gcr.io/"${PROJECTID}"/"${CI_PROJECT_NAME}")
-    - echo $TAGS_GCP >> .tags_gcp
-  allow_failure: true
-  only:
-    - develop
-    - test
-    - master
-  tags:
-    - k8s-runner
-  artifacts:
-    when: always
-    name: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .tags_gcp
+# validate-version:
+#   image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
+#   stage: validate-version
+#   script:
+#     - OWNER=$(cat pipeline/ci/.owner)
+#     - NSR_GCR_AUTH_OWNED=NSR_GCR_AUTH_${OWNER}_${CI_COMMIT_REF_SLUG}
+#     - echo ${!NSR_GCR_AUTH_OWNED} | base64 -d > gcr_auth.json
+#     - gcloud auth activate-service-account --key-file=gcr_auth.json
+#     - PROJECTID=$(cat .projectid${CI_COMMIT_REF_SLUG})
+#     - GCR_PULL_KEY=$(cat .envdevelop)
+#     - VERSION=$(cat .version)
+#     - TAGS_GCP=$(gcloud container images list-tags --filter="tags:$VERSION" --format=json us.gcr.io/"${PROJECTID}"/"${CI_PROJECT_NAME}")
+#     - echo $TAGS_GCP >> .tags_gcp
+#   allow_failure: true
+#   only:
+#     - develop
+#     - test
+#     - master
+#   tags:
+#     - k8s-runner
+#   artifacts:
+#     when: always
+#     name: ${CI_COMMIT_REF_SLUG}
+#     paths:
+#       - .tags_gcp
 
 publish-dev:
   image: registrysecaas.azurecr.io/secaas/gcp-sdk:latest
@@ -186,56 +184,5 @@ clean-tmp:
     - gcloud container images delete us.gcr.io/$PROJECTID/tmp/"${CI_PROJECT_NAME}":$VERSION --force-delete-tags --quiet
   only:
     - develop
-  tags:
-    - k8s-runner
-
-build-test:
-  image: docker:stable-dind
-  stage: build
-  services:
-    - docker:18.09.7-dind
-  script:
-    - mkdir ~/.docker
-    - echo $DOCKER_AUTH_CONFIG >> ~/.docker/config.json
-    - VERSION=$(cat .version)
-    - GCR_PULL_KEY=$(cat .envdevelop)
-    - PROJECTID=$(cat .projectidtest)
-    - TAGS_GCP=$(cat .tags_gcp)
-    - if [[ "$TAGS_GCP" == "[]" ]]; then  docker push us.gcr.io/"${PROJECTID}"/tmp/"${CI_PROJECT_NAME}":$VERSION; else  figlet Este Tag ya existe echo "Este TAG ya existe:" "${CI_PROJECT_NAME}":"$VERSION"  "NO se publicaran los cambios" && exit 1; fi
-    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY us.gcr.io
-    - docker pull us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
-    - docker tag us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
-    - GCR_PULL_KEY_TEST=$(cat .envtest)
-    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_TEST us.gcr.io
-    - docker push us.gcr.io/$PROJECTID/"${CI_PROJECT_NAME}":$VERSION
-  allow_failure: true
-  only:
-    - test
-  tags:
-    - k8s-runner
-
-build-master:
-  image: docker:stable-dind
-  stage: build
-  services:
-    - docker:18.09.7-dind
-  script:
-    - mkdir ~/.docker
-    - echo $DOCKER_AUTH_CONFIG >> ~/.docker/config.json
-    - VERSION=$(cat .version)
-    - GCR_PULL_KEY=$(cat .envtest)
-    - PROJECTID_TEST=$(cat .projectidtest)
-    - PROJECTID_MASTER=$(cat .projectidmaster)
-    - TAGS_GCP=$(cat .tags_gcp)
-    - if [[ "$TAGS_GCP" == "[]" ]]; then  docker push us.gcr.io/"${PROJECTID}"/tmp/"${CI_PROJECT_NAME}":$VERSION; else  echo "Este TAG ya existe:" "${CI_PROJECT_NAME}":"$VERSION"  "NO se publicaran los cambios" && exit 1; fi
-    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY us.gcr.io
-    - docker pull us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION
-    - docker tag us.gcr.io/$PROJECTID_TEST/"${CI_PROJECT_NAME}":$VERSION us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}":$VERSION
-    - GCR_PULL_KEY_MASTER=$(cat .envmaster)
-    - docker login -u oauth2accesstoken -p $GCR_PULL_KEY_MASTER us.gcr.io
-    - docker push us.gcr.io/$PROJECTID_MASTER/"${CI_PROJECT_NAME}"-$VERSION
-  allow_failure: true
-  only:
-    - master
   tags:
     - k8s-runner
