@@ -30,9 +30,9 @@ package:
   image: node:10.20.1-alpine3.9
   stage: package
   script:
-    - npm prune --production
+    # - npm prune --production
     - npm install
-    - npx ng build
+    - npm run build
     - ls -la dist/falabella-hackaton
   only:
     - develop
