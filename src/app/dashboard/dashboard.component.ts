@@ -60,6 +60,7 @@ export class DashboardComponent implements AfterViewInit {
   clustersTimes = [];
   clustersCentroids = [];
   rutaOptima = '';
+  tramos = [];
 
   private coordinates: google.maps.LatLng;
   constructor(private store: Store<AuthState>, private router: Router, private  httpClient: HttpClient, public dialog: MatDialog) {
@@ -285,8 +286,9 @@ export class DashboardComponent implements AfterViewInit {
         departureTime: 'now'
       }
     ));
-    this.httpClient.post('http://localhost:8082/api/v1/costTravels', arrBenitez).subscribe((data: any) => {
+    this.httpClient.post('http://127.0.0.1:8082/api/v1/costTravels', arrBenitez).subscribe((data: any) => {
       console.log('data req benitez', data);
+      const reqBen = data;
       const res = [];
       matriz.map((primero) => {
         const row = [];
@@ -309,6 +311,33 @@ export class DashboardComponent implements AfterViewInit {
         this.rutaOptima = data.split('\n')[1].split(' -> ').map(chunk => parseInt(chunk)).map((index) => {
           return matrixIndex[index]['nodeName'];
         }).join(' , ');
+
+
+        const searchString = data.split('\n')[1].split(' -> ').map(chunk => parseInt(chunk)).map((index) => {
+          return matrixIndex[index]['nodeName'];
+        });
+
+        console.log('ruta optima', searchString);
+        const sum = [];
+        searchString.forEach((item, index) => {
+          if (index + 1 < searchString.length - 1) {
+            sum.push(`${searchString[index]},${searchString[index+1]}`);
+          }
+        });
+
+        console.log('sum', sum);
+
+        this.tramos = [];
+        sum.forEach((leg) => {
+          this.tramos.push({
+            legName: leg,
+            cost: reqBen.filter(( reqBen) => reqBen.pointID === leg)[0]['durationSecond']
+          });
+        });
+        console.log('tramos', this.tramos);
+
+
+
 
       });
 

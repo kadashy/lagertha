@@ -28,13 +28,18 @@
           <button mat-stroked-button color="warn" (click)="calcRoute()">Calc Route</button>
         </div>
 
-        <mat-selection-list #shoes [multiple]="false">
+        <mat-selection-list [multiple]="false">
           <mat-list-option *ngFor="let trans of transports;let i = index" [value]="trans" (click)="drawTransportPoints(i)">
             {{trans}}
           </mat-list-option>
         </mat-selection-list>
         <div class="route-wrapper">
-          <span *ngIf="rutaOptima">Ruta optima: {{rutaOptima}}</span>
+          <span *ngIf="rutaOptima">Ruta optima: </span>
+          <mat-selection-list [multiple]="false">
+            <mat-list-option *ngFor="let tr of tramos;let j = index" [value]="tr">
+              Tramo {{j}}: {{tr.legName}} / Costo {{tr.cost}}
+            </mat-list-option>
+          </mat-selection-list>
         </div>
       </div>
     </div>
