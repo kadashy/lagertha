@@ -59,6 +59,7 @@ export class DashboardComponent implements AfterViewInit {
   currentClusters = {};
   clustersTimes = [];
   clustersCentroids = [];
+  rutaOptima = '';
 
   private coordinates: google.maps.LatLng;
   constructor(private store: Store<AuthState>, private router: Router, private  httpClient: HttpClient, public dialog: MatDialog) {
@@ -336,9 +337,32 @@ export class DashboardComponent implements AfterViewInit {
         departureTime: 'now'
       }
     ));
-    console.log('request benitez', arrBenitez);
     this.httpClient.post('http://localhost:8082/api/v1/costTravels', arrBenitez).subscribe((data: any) => {
       console.log('data req benitez', data);
+      const res = [];
+      matriz.map((primero) => {
+        const row = [];
+        primero.map((segundo) => {
+          row.push(data.filter((chunk) => `${segundo[0]['id']},${segundo[1]['id']}` === chunk.pointID)[0]['durationSecond']);
+        });
+        res.push(row);
+      });
+      this.httpClient.post('http://localhost:8080/tsp',
+        {nodes: res}
+        ).subscribe((data: any) => {
+        console.log('TSP data', data);
+        console.log('matrix, index');
+        console.log(matriz[0].map((chunk, index) => ({index, nodeName: chunk[1]['id']})));
+        const matrixIndex = matriz[0].map((chunk, index) => ({index, nodeName: chunk[1]['id']}));
+        console.log('split', data.split('\n')[1].split(' -> ').map(chunk => parseInt(chunk)));
+
+        console.log('ruta optima');
+
+        this.rutaOptima = data.split('\n')[1].split(' -> ').map(chunk => parseInt(chunk)).map((index) => {
+          return matrixIndex[index]['nodeName'];
+        }).join(' , ');
+
+      });
 
     });
   }
