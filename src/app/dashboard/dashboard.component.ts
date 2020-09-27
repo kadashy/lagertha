@@ -137,62 +137,7 @@ export class DashboardComponent implements AfterViewInit {
         this.drawPoint(point, this.map);
         return point;
       });
-
-    // Transport Points
-    // turf.point()
-    // const turfPoints = turf.featureCollection(transportPoints.map((point, num) => turf.point([point.lng, point.lat], {id: num})));
-    // console.log(turfPoints);
-    // const clustered = clustersDbscan(turfPoints, 1);
-    // console.log('clustered', clustered);
-    //
-    // const clusters = {};
-    // clustered.features.forEach((feat: any) => {
-    //   if (!clusters[feat.properties.cluster]) {
-    //     clusters[feat.properties.cluster] = [feat];
-    //   } else  {
-    //     clusters[feat.properties.cluster].push(feat);
-    //   }
-    // });
-    // console.log('clusters', clusters);
-    //
-    // const polygons = [];
-    // for (let clusterArr in clusters) {
-    //   // console.log('geometry', clusters[clusterArr]);
-    //   // console.log('clusters[clusterArr]', clusters[clusterArr].map(feat => turf.point(feat.geometry.coordinates.map( x => parseFloat(x)))));
-    //   polygons.push(concave(clusters[clusterArr].map(feat => turf.point(feat.geometry.coordinates.map( x => parseFloat(x))))));
-    // }
-
-    // Request
-
-    // this.httpClient.post('http://localhost:8080/points', {points: this.orders.filter(order => order.transport_id === this.transports[index])} ).subscribe((data: any) => {
-    //   console.log('data', data);
-    //   const pointsToDraw = data.map( (x, i) => ({
-    //     nro_oc: i,
-    //     transport_id: i,
-    //     lat: x.split(',')[0],
-    //     lng: x.split(',')[1]
-    //   }));
-    //   pointsToDraw.forEach( x => this.drawPoint(x, this.map));
-    //   console.log('puntos a dibujar', pointsToDraw);
-    // });
-    //
-    // this.httpClient.post('http://localhost:8080/tsp',
-    //   {nodes: [
-    //     [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //       [123,123,123 ,123,123,123,231,321],
-    //     ]}
-    //   ).subscribe((data: any) => {
-    //   console.log('TSP data', data);
-    // });
-
-    // console.log('polygons', polygons);
-    // this.drawRoute();
+    this.clusterize();
   }
 
 
@@ -219,6 +164,7 @@ export class DashboardComponent implements AfterViewInit {
       });
       // pointsToDraw.forEach( x => this.drawPoint(x, this.map));
       // console.log('puntos a dibujar', pointsToDraw);
+      this.routeToCenters();
     });
   }
 
@@ -253,6 +199,8 @@ export class DashboardComponent implements AfterViewInit {
         label: center.cluster
       });
     });
+
+    this.calcRoute();
   }
 
 
