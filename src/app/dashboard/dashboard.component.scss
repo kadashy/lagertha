@@ -22,6 +22,9 @@
     font-size: 15px;
     font-weight: 400;
   }
+  mat-toolbar {
+    background-color: #73bc1c!important;
+  }
 
   .card-container {
     margin: 20px 20px;
@@ -67,6 +70,24 @@
     display: flex;
     height: 100%;
     width: 70%;
+  }
+  mat-selection-list {width: 100%}
+  .routes-wrapper {
+    width: 30%;
+  }
+  .titulo {
+    display: flex;
+    font-size: 20px;
+    margin: 10px 0 0 10px ;
+  }
+  .button-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0 0 10px;
+    button {
+      margin-right: 10px;
+    }
   }
   .dashboard-wrapper {
     height: 100%;

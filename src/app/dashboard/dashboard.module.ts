@@ -11,6 +11,7 @@ import {MatCardModule} from '@angular/material/card';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {ChartsModule} from 'ng2-charts';
+import {MatListModule} from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -27,8 +28,8 @@ import {ChartsModule} from 'ng2-charts';
     MatCardModule,
     MatDialogModule,
     MatProgressSpinnerModule,
-    ChartsModule
-
+    ChartsModule,
+    MatListModule
   ],
   providers: [HttpClient]
 })

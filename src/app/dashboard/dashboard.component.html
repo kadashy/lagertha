@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span>Routing</span>
+  <span>Optimus</span>
   <span class="example-spacer"></span>
   <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon" (click)="logout()">
     <mat-icon>exit_to_app</mat-icon>
@@ -17,19 +17,23 @@
 
 <ng-template #content>
     <div class="dashboard-wrapper">
-        <div class="map-wrapper">
-            <div #mapContainer id="map"></div>
+      <div class="map-wrapper">
+          <div #mapContainer id="map"></div>
+      </div>
+      <div class="routes-wrapper">
+        <span class="titulo">Transportes Disponibles: </span>
+        <div class="button-wrapper">
+          <button mat-stroked-button color="primary" (click)="clusterize()">Clusterize</button>
+          <button mat-stroked-button color="accent" (click)="routeToCenters()">Fastest</button>
+          <button mat-stroked-button color="warn" (click)="calcRoute()">Calc Route</button>
         </div>
-        <div class="routes-wrapper">
-            <div *ngFor="let trans of transports;let i = index" class="routes-titles" (click)="drawTransportPoints(i)">
-                {{trans}}
-            </div>
 
-
-        <div class="routes-availables">
-
-        </div>
-        </div>
+        <mat-selection-list #shoes [multiple]="false">
+          <mat-list-option *ngFor="let trans of transports;let i = index" [value]="trans" (click)="drawTransportPoints(i)">
+            {{trans}}
+          </mat-list-option>
+        </mat-selection-list>
+      </div>
     </div>
 
 
