@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web
+  name: web
+  namespace: austral
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 60
+  minReadySeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 6
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: 'kadashy/app-demo:latest'
+          imagePullPolicy: Always
+          env:
+            - name: ENVIRONMENT
+              value: test
+            - name: ENV_1
+              valueFrom:
+                secretKeyRef:
+                  name: secrets-demo
+                  key: ENV_1
+            - name: ENV_2
+              valueFrom:
+                secretKeyRef:
+                  name: secrets-demo
+                  key: ENV_2
+          ports:
+            - containerPort: 5000
+              name: "http"
+              protocol: "TCP"
+          livenessProbe:
+            httpGet:
+              path: /probe/healthy
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 4
+            successThreshold: 1
+            failureThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /probe/healthy
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 4
+            successThreshold: 1
+            failureThreshold: 1
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "350Mi"
+            requests:
+              cpu: "100m"
+              memory: "200Mi"
